@@ -86,11 +86,11 @@
         mapboxgl.accessToken = 'pk.eyJ1IjoiZ3JhY2VkYW8iLCJhIjoiY21oY205ejNrMGQ3YjJtb2VrOG5kOG12dyJ9.wud5N0YXnuKiAJueq01ddQ';
         const map = new mapboxgl.Map({
             container: 'map',
-            style: 'mapbox://style/mapbox/light-v10',
-            zoom: 3,
+            style: 'mapbox://styles/mapbox/light-v10', 
+            zoom: 6,
             center: [-120.85, 47.25],
         });
-        // map.getCanvas().style.cursor = 'default';
+        map.getCanvas().style.cursor = 'default';
 
         async function geojsonFetch() {
             let response = await fetch('assets/wa-covid-data-102521.geojson');
@@ -108,14 +108,80 @@
                     'source': 'covidData',
                     'paint': {
                         'fill-color': [
-                            'step',
-                            ['get', 'casePer10k'],
-                                
-                        ]
+                            'step',    
+                            ['get', 'casePer10k'],  
+                            '#FFEDA0',   
+                            200, 
+                            
+                            '#FED976',
+                            400,
+                            
+                            '#FEB24C', 
+                            600, 
+                            
+                            '#FD8D3C',
+                            800, 
+                            
+                            '#FC4E2A', 
+                            1000, 
+                            
+                            '#E31A1C',
+                            1200,
+                            
+                            '#BD0026',
+                            1500,
+                            
+                            "#800026"
+                        ],
+                        'fill-outline-color': '#BBBBBB',
+                        'fill-opacity': 0.7,
                     }
-                })
+                });
+
+                const layers = [
+                    '200–399',
+                    '400–599',
+                    '600–799',
+                    '800–999',
+                    '1000–1199',
+                    '1200–1499',
+                    '1500+'
+                ];
+
+                const colors = [
+                    '#FFEDA0','#FED976','#FEB24C','#FD8D3C',
+                    '#FC4E2A','#E31A1C','#BD0026','#800026','#BBBBBB'
+                ];
+
+                const legend = document.getElementById('legend');
+                legend.innerHTML = "<b>COVID-19 Cases by County<br>(per 10,000 residents)</b><br></br>";
+
+                layers.forEach((layers, i) => {
+                    const color = colors[i];
+                    const item = document.createElement('div');
+                    const key = document.createElement('span');
+                    key.className = 'legend-key';
+                    key.style.backgroundColor = color;
+
+                    const value = document.createElement('span');
+                    value.innerHTML = `${layers}`;
+                    item.appendChild(key);
+                    item.appendChild(value);
+                    legend.appendChild(item);
+                });
+            });
+
+            map.on('mousemove', ({point}) => {
+                const name = map.queryRenderedFeatures(point, {
+                    layers: ['covidData-layer']
+                });
+                document.getElementById('text-description').innerHTML = name.length ?
+                    `<h3>${name[0].properties.name}</h3><p><strong><em>${name[0].properties.casePer10k}</strong> cases per 10k people</em></p>` :
+                    `<p>Hover over a County!</p>`;
             });
         }
+
+        geojsonFetch();
     </script>
 
 </body>
